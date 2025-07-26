@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const Game = () => {
   const [gameState, setGameState] = useState(null);
   const [winnerMessage, setWinnerMessage] = useState("");
+
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     startNewGame();
@@ -11,43 +15,30 @@ const Game = () => {
 
   const handleHit = () => {
     axios
-      .post("http://localhost:3000/game/hit", {
-        gameId: gameState._id,
-      })
+      .post(`${API_BASE_URL}/game/hit`, { gameId: gameState._id })
       .then((response) => {
         setGameState(response.data);
-        if (response.data.winner) {
-          checkWinner(response.data.winner);
-        }
+        if (response.data.winner) checkWinner(response.data.winner);
       })
       .catch((error) => console.log("Error while hitting", error));
   };
 
   const handleStand = () => {
     axios
-      .post("http://localhost:3000/game/stand", {
-        gameId: gameState._id,
-      })
+      .post(`${API_BASE_URL}/game/stand`, { gameId: gameState._id })
       .then((response) => {
         setGameState(response.data);
-        if (response.data.winner) {
-          checkWinner(response.data.winner);
-        }
+        if (response.data.winner) checkWinner(response.data.winner);
       })
       .catch((error) => console.log("Error while standing", error));
   };
 
-  const timeoutRef = useRef(null);
-
   const startNewGame = () => {
     setWinnerMessage("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current); // cancel pending reset
-      timeoutRef.current = null;
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     axios
-      .post("http://localhost:3000/game/start")
+      .post(`${API_BASE_URL}/game/start`)
       .then((response) => setGameState(response.data))
       .catch((error) => console.log("Error while starting a new game", error));
   };
@@ -61,16 +52,13 @@ const Game = () => {
     }
   };
 
-
   if (!gameState) return <p>Loading...</p>;
 
   return (
     <div className="blackjack-container">
       <h1>Blackjack Game</h1>
 
-      {winnerMessage && (
-        <div className="winner-message">{winnerMessage}</div>
-      )}
+      {winnerMessage && <div className="winner-message">{winnerMessage}</div>}
 
       <div className="ma">
         <div className="playerside">
